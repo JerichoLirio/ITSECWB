@@ -1,0 +1,84 @@
+<div class="main-container">
+    {{!-- Branding section --}}
+    <div class="top-bar">
+        <div class="corner-logo">
+            <div class="logo-circle">LRS</div>
+            <div class="system-name">Lab Reservation System</div>
+        </div>
+        <div class="user-corner">
+            <button id="userBtn" class="btn user-btn" data-bs-toggle="modal" data-bs-target="#userModal">
+                <img id="userIcon" src="/images/person-circle.svg" style="width:40px;">              
+            </button>
+        </div>
+    </div>
+
+    {{!-- Hero Section --}}
+    <div class="hero-section">
+        <div class="hero-image-placeholder">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    placeholder="Search labs" 
+                    id="lab-search" 
+                    class="search-input"
+                    autocomplete="off"
+                >
+                <img src="/images/magnifying.svg" alt="Search" class="search-icon">
+
+                {{!-- Suggestions Dropdown - Populated by homepage.js --}}
+                <div id="search-suggestions" class="search-suggestions"></div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Content Section --}}
+    <div class="content-section">
+        <h2 class="section-title">Popular Labs</h2>
+        <hr class="section-divider">
+ 
+        <div class="lab-grid">
+            <a href="/reservation/G404A">
+                <div class="lab-card">
+                    <div class="lab-image-container" style="background-image: url('/images/Goks.jpg');">
+                        <span class="lab-label">G404A</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/reservation/G404B">
+                <div class="lab-card">
+                    <div class="lab-image-container" style="background-image: url('/images/Goks.jpg');">
+                        <span class="lab-label">G404B</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/reservation/V101">
+                <div class="lab-card">
+                    <div class="lab-image-container" style="background-image: url('/images/Velasco.jpg');">
+                        <span class="lab-label">V101</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+{{!-- User Profile Modal --}}
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center gap-3">
+                <img id="profile-modal-icon" class="modal-user-icon" src="/images/person-circle.svg">
+                <a href="/account-profile" target="_self" class="user-link" id="userLink">{{username}}</a>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a onclick="logout()" class="btn modal-btn bg-danger text-white" id="logoutBtn">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>

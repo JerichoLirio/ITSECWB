@@ -1,0 +1,95 @@
+    body {
+        background-color: #f8f8f8;
+    }
+
+    /* Use this instead of repeating p-3 and rounded-3 for every content container */
+    .content-container {
+        padding: 1rem;         /* basically p-3 */
+        border-radius: 2rem; /* same rounded-3 */
+    }
+
+    /* Custom style for all modal buttons */
+    .modal-btn {
+        width: 200px; 
+        height: 50px; 
+        border-radius: 25px;
+        font-size: 1.25rem;
+    }
+
+    /* Seat and Desk styling */
+    .seat {
+        width: 90px; 
+        height: 90px; 
+        border-radius: 50%;
+        background-color: #3e8e41;
+        border: 1px solid black;
+        margin-bottom: 20px;
+    }
+    .btn.seat:hover {
+        background-color: #00703c; /* color on hover */
+    }
+    .btn.seat.occupied {
+        background-color: #ad0d0ddb;
+        color: #fff;
+    }
+    .desk {
+        width: 550px; 
+        height: 80px; 
+        border-radius: 25px;
+        background-color: #d9cfb3;
+        border-color: black;
+        border: 2px solid black;
+    }
+
+    /* This could just be an ID but it may be used in other pages once we organize the CSS better so I made it a class*/
+    .logo-img {
+        height: 40px;
+    }
+    .logo-label {
+        color: #00703c;
+    }
+
+    /* Container for everything below the navbar*/
+    .main-container {
+        min-height: 0; /* so that flex children will shrink properly, otherwise time interval would expand beyond viewport without it */
+        background-image: url('../../images/reservation-bg.png');
+        background-size: cover;     
+        background-position: center;  
+        background-repeat: no-repeat; 
+    }
+
+    /* Modal styling */
+    .modal-content {
+        border-radius: 25px;
+        border-color: black;
+        border: 2px solid black;
+    }
+    .modal-title {
+        font-weight: bold;
+    }
+    .user-link {
+        font-size: 2rem;
+    }
+    .modal-user-icon {
+        width: 70px;
+        height: 70px;
+    }
+    .seat-details {
+        font-size: 1.25rem;
+    }
+    #anonymousCheck {
+        transform: scale(1.5); /* Makes the anonymous checkbox bigger so it doesn't look small in comparison to the label*/
+    }
+
+
+    /* The button for the top-right element that links to the user profile modal */
+    #userBtn {
+        border: none; 
+        background: none; 
+        border-radius: 50%;
+    }
+    
+    #userBtn img{
+        width: 36px;
+        height: 36px;
+    }
