@@ -1,89 +1,71 @@
-<!-- Register Box -->
-<div class="register-box">
+// Package declarations
+const express = require('express');
+const session = require('express-session');
+const bodyParser = require('body-parser');
+const path = require('path');
+const exphbs = require('express-handlebars');
+const mongoose = require('mongoose');
 
-    <!-- Header -->
-    <div class="corner-logo">
-        <div class="logo-circle">LRS</div>
-        <div class="system-name">Lab Reservation System</div>
-    </div>
+// Models 
+const Lab = require('./models/Lab');
+const Reservation = require('./models/Reservation');
+const User = require('./models/User');
 
-    <div class="register-title">
-        <h1>Register</h1>
-    </div>
+// Routes
+const pageRoutes = require('./routes/pageRoutes');
+const authRoutes = require('./routes/authRoutes');
+const reservationRoutes = require('./routes/reservationRoutes');
+const apiRoutes = require('./routes/apiRoutes');
 
-    <form class="register-form" id="register-form">
+const app = express();
+const PORT = 3000;
 
-        <!-- Username Field -->
-        <div class="form-group">
-            <div class="input-with-icon">
-                <div class="input-icon">
-                    <img src="/images/user.svg" alt="User icon" class="svg-icon">
-                </div>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username"
-                    class="form-input" 
-                    placeholder="Choose a Username"
-                    required
-                >
-            </div>
-        </div>
+// Connect to MongoDB
+mongoose.connect('mongodb://127.0.0.1:27017/userdb')
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-        <div class="form-group">
-            <div class="input-with-icon">
-                <div class="input-icon">
-                <img src="/images/user.svg" alt="Email icon" class="svg-icon">
-                </div>
-                <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required>
-            </div>
-        </div>
+// Setup handlebars
+app.engine('handlebars', exphbs.engine({
+  defaultLayout: 'main',
+  layoutsDir: path.join(__dirname, 'views', 'layouts'),
+  helpers: {  // https://docs.brightspot.com/docs/developer/helpers, consider refactoring to use this more 
+    eq: (a, b) => a === b
+  }
+}));
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, './views'));
+  
+// Middleware
+app.use(session({
+  secret: 'APDEVSecretKey',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { // disable for specs requirement "a user session must persist until the user either logs out or closes the window." this breaches "closes the window" or condition
+    secure: false, // set to true if using https
+  }
+}));
 
-        <!-- Password Field -->
-        <div class="form-group">
-            <div class="input-with-icon">
-                <div class="input-icon">
-                    <img src="/images/password.svg" alt="Password icon" class="svg-icon">
-                </div>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password"
-                    class="form-input" 
-                    placeholder="Create Password"
-                    required
-                >
-            </div>
-        </div>
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname,'public')));
 
-        <!-- Confirm Password Field -->
-        <div class="form-group">
-            <div class="input-with-icon">
-                <div class="input-icon">
-                    <img src="/images/password.svg" alt="Password icon" class="svg-icon">
-                </div>
-                <input 
-                    type="password" 
-                    id="confirm-password" 
-                    name="confirmPassword"
-                    class="form-input" 
-                    placeholder="Confirm Password"
-                    required
-                >
-            </div>
-        </div>
+// Routes
+app.use('/', pageRoutes);
+app.use('/api', authRoutes);
+app.use('/api', reservationRoutes);
+app.use('/api', apiRoutes);
 
-        <!-- Button Container -->
-        <button type="submit" class="register-button">
-            Create Account
-        </button>
-    </form>
+// if user goes to route that doesn't exist
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
 
-    <!-- Login Link -->
-    <div class="login-link">
-        <span style="color: #666;">Already have an account? </span>
-        <a href="/login">Sign in here</a>
-    </div>
-
-</div>
-
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Press Ctrl+C to stop the server`);
+});
