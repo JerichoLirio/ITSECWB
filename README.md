@@ -1,10 +1,4 @@
-A CCAPDEV Project
-
-Members: 
-GREG AVILA JR. 
-CHRISTIAN GABRIEL SANIDAD 
-MAMIGO, NIKOLO MIGUEL QUIOCHO
-VALLE, JOSE EDGARDO TABLAN
+ITSECWB PROJECT
 
 The project is about creating a lab reservation system fully developed with client-server architecture and following model-view-controller architecture
 
