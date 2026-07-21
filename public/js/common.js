@@ -1,5 +1,5 @@
 
-const MIN_PASSWORD_LENGTH = 3
+const MIN_PASSWORD_LENGTH = 8
 
 // Show message to user
 /**
@@ -117,10 +117,10 @@ async function logout() {
 }
 
 
-async function createTechnician() {
-  const username = document.getElementById('tech-username').value.trim();
-  const email = document.getElementById('tech-email').value.trim();
-  const password = document.getElementById('tech-password').value.trim();
+async function createLabManager() {
+  const username = document.getElementById('manager-username').value.trim();
+  const email = document.getElementById('manager-email').value.trim();
+  const password = document.getElementById('manager-password').value.trim();
 
   if (!username) {
     showMessage('Username is required', 'error');
@@ -149,18 +149,18 @@ async function createTechnician() {
   }
 
   try {
-    const response = await fetch('/api/create-technician', {
+    const response = await fetch('/api/admin/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username, email, password, role: 'lab_manager', securityQuestion: 'What is your assigned recovery phrase for this lab account?', securityAnswer: 'TemporaryAnswer123!' })
     });
 
     const data = await response.json();
 
     if (data.success) {
-      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('createTechnicianModal'));
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('createLabManagerModal'));
       modal.hide();
-      showMessage('Technician account created successfully!', 'success');
+      showMessage('Lab Manager account created successfully!', 'success');
     } else {
       showMessage('Failed: ' + data.message, 'error');
     }

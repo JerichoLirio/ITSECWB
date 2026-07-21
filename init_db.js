@@ -1,78 +1,95 @@
-/* Short script to initialize some data into the db */
 const mongoose = require('mongoose');
-const User = require('./models/User');
-const Lab = require('./models/Lab');
-const Reservation = require('./models/Reservation');
-const mongoURL = 'mongodb://127.0.0.1:27017/userdb';
-
-// Added hashing for initial test users otherwise login would not work for them
 const bcrypt = require('bcryptjs');
+const User = require('./models/User');
+const Reservation = require('./models/Reservation');
+const AuditLog = require('./models/AuditLog');
+
+const mongoURL = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/userdb';
 const SALT_ROUNDS = 10;
 
 
-const testUsers = [
-  { username: 'johndoe', email: 'johndoe@dlsu.edu.ph', password: 'password123', role: 'student', description: 'Hey there'}, 
-  { username: 'janedoe', email: 'janedoe@dlsu.edu.ph', password: 'password123', role: 'student', description: 'ZZZ'},
-  { username: 'tech',email: 'techadmin@dlsu.edu.ph', password: 'tech', role: 'technician', description: 'Lab technician'}, 
-  { username: 'admin', email: 'admin@dlsu.edu.ph',     password: 'admin', role: 'admin', description: 'System admin'}, 
-  { username: 'arnoldschwarzenegger', email: 'arnold@dlsu.edu.ph',    password: 'password123', role: 'student',    description: 'Get to the choppa' },
-  { username: 'brucelee',  email: 'bruce@dlsu.edu.ph', password: 'password123', role: 'student', description: 'Kapow'}, 
-];
-
-async function hashPasswords() {
-  for (const user of testUsers) {
-    user.password = await bcrypt.hash(user.password, SALT_ROUNDS);
-  }
+function getNextValidReservationDate() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  if (date.getDay() === 0) date.setDate(date.getDate() + 1);
+  return date.toISOString().slice(0, 10);
 }
 
-
-// May not be necessary to use labs as a model
-// const testLabs = [
-//   { name: 'G404A' },
-//   { name: 'G404B' },
-//   { name: 'V101' },
-// ];
+const testUsers = [
+  {
+    username: 'admin',
+    email: 'admin@dlsu.edu.ph',
+    password: 'Admin123!',
+    role: 'admin',
+    description: 'Website Administrator',
+    securityQuestion: 'What is the admin demo recovery phrase?',
+    securityAnswer: 'GreenArcherAdmin'
+  },
+  {
+    username: 'labmanager',
+    email: 'labmanager@dlsu.edu.ph',
+    password: 'Manager123!',
+    role: 'lab_manager',
+    description: 'Lab Manager',
+    securityQuestion: 'What is the lab manager demo recovery phrase?',
+    securityAnswer: 'GoksLabManager'
+  },
+  {
+    username: 'student',
+    email: 'student@dlsu.edu.ph',
+    password: 'Student123!',
+    role: 'student',
+    description: 'Student account',
+    securityQuestion: 'What is the student demo recovery phrase?',
+    securityAnswer: 'AnimoStudent'
+  },
+  {
+    username: 'janedoe',
+    email: 'janedoe@dlsu.edu.ph',
+    password: 'Student123!',
+    role: 'student',
+    description: 'Another student account',
+    securityQuestion: 'What is your assigned demo recovery phrase?',
+    securityAnswer: 'JaneDemoAnswer'
+  }
+];
 
 async function initialize() {
   try {
     await mongoose.connect(mongoURL);
 
-    // Insert initial data
-    await hashPasswords();
-    const users = await User.insertMany(testUsers);
-  
-    const testReservations = [
-      // G404A - 7:30-8:00
-      { userId: users[0]._id, lab: 'G404A', seat: 'S1',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
-      { userId: users[1]._id, lab: 'G404A', seat: 'S2',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
-      { userId: users[4]._id, lab: 'G404A', seat: 'S3',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
-      { userId: users[5]._id, lab: 'G404A', seat: 'S4',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: true  },
-      { userId: users[4]._id, lab: 'G404A', seat: 'S5',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
- 
-      // G404A - 8:00-8:30
-      { userId: users[5]._id, lab: 'G404A', seat: 'S6',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
-      { userId: users[0]._id, lab: 'G404A', seat: 'S7',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: true  },
-      { userId: users[1]._id, lab: 'G404A', seat: 'S8',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
-      { userId: users[4]._id, lab: 'G404A', seat: 'S9',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
-      { userId: users[5]._id, lab: 'G404A', seat: 'S10', date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
- 
-      // G404B - 7:30-8:00
-      { userId: users[4]._id, lab: 'G404B', seat: 'S1',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
-      { userId: users[5]._id, lab: 'G404B', seat: 'S2',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
-      { userId: users[0]._id, lab: 'G404B', seat: 'S3',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: true  },
-      { userId: users[1]._id, lab: 'G404B', seat: 'S4',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
-      { userId: users[4]._id, lab: 'G404B', seat: 'S5',  date: '2026-04-01', startTime: '7:30', endTime: '8:00', anonymous: false },
- 
-      // G404B - 8:00-8:30
-      { userId: users[5]._id, lab: 'G404B', seat: 'S6',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
-      { userId: users[4]._id, lab: 'G404B', seat: 'S7',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
-      { userId: users[0]._id, lab: 'G404B', seat: 'S8',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: true  },
-      { userId: users[1]._id, lab: 'G404B', seat: 'S9',  date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
-      { userId: users[5]._id, lab: 'G404B', seat: 'S10', date: '2026-04-01', startTime: '8:00', endTime: '8:30', anonymous: false },
-    ];
+    await User.deleteMany({});
+    await Reservation.deleteMany({});
+    await AuditLog.deleteMany({});
 
+    for (const user of testUsers) {
+      const plainPassword = user.password;
+      user.password = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+      user.securityAnswerHash = await bcrypt.hash(user.securityAnswer.toLowerCase(), SALT_ROUNDS);
+      user.passwordHistory = [user.password];
+      delete user.securityAnswer;
+    }
+
+    const users = await User.insertMany(testUsers);
+    const student = users.find(u => u.username === 'student');
+    const jane = users.find(u => u.username === 'janedoe');
+
+    const demoDate = getNextValidReservationDate();
+    const testReservations = [
+      { userId: student._id, lab: 'G404A', seat: 'S1', date: demoDate, startTime: '7:30', endTime: '8:00', anonymous: false },
+      { userId: jane._id, lab: 'G404A', seat: 'S2', date: demoDate, startTime: '7:30', endTime: '8:00', anonymous: false },
+      { userId: student._id, lab: 'G404B', seat: 'S3', date: demoDate, startTime: '8:00', endTime: '8:30', anonymous: true },
+      { userId: users.find(u => u.username === 'labmanager')._id, lab: 'V101', seat: 'S4', date: demoDate, startTime: '9:00', endTime: '9:30', anonymous: false, walkInName: 'Walk In Student' }
+    ];
     await Reservation.insertMany(testReservations);
 
+    await AuditLog.create({ eventType: 'DATABASE_SEED', status: 'success', username: 'system', role: 'system', details: { message: 'Demo accounts created' } });
+
+    console.log('Database initialized successfully.');
+    console.log('Demo accounts:');
+    console.log('admin / Admin123!');
+    console.log('labmanager / Manager123!');
+    console.log('student / Student123!');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error);

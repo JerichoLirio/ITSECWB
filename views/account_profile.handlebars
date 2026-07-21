@@ -32,6 +32,7 @@
 
                 <h1 class="profile-name">{{currentUser.username}}</h1>
                 <p class="profile-bio">{{currentUser.description}}</p>
+                <p class="text-muted">Role: {{roleLabel}}</p>
             </div>
 
             {{#if isOwnProfile}}
@@ -47,7 +48,7 @@
             {{#each reservations}}
             <!-- Reservation Card -->
             <div class="reservation-card">
-                <img src="/images/office-space-1.jpg" alt="Office Space" class="reservation-image" onerror="this.src='https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop'">
+                <img src="/images/office-space-1.jpg" alt="Office Space" class="reservation-image" onerror="this.src='/images/dlsu.jpg'">
                 <div class="reservation-details">
                     <h3 class="reservation-name">{{this.labName}}</h3>
                     <p class="reservation-info">Seat: {{this.seat}}</p>
@@ -84,8 +85,13 @@
             <input type="email" class="form-control" id="editEmail" value="{{currentUser.email}}" required>
           </div>
           <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="currentPassword" placeholder="Required only when changing password">
+          </div>
+          <div class="mb-3">
             <label for="editPassword" class="form-label">New Password</label>
             <input type="password" class="form-control" id="editPassword" placeholder="Leave blank to keep current password">
+            <small class="text-muted">8+ characters with uppercase, lowercase, number, and special character.</small>
           </div>
           <div class="mb-3">
             <label for="editDescription" class="form-label">Bio / Description</label>
@@ -132,21 +138,26 @@ document.getElementById('removePicBtn')?.addEventListener('click', function() {
 // Save profile
 document.getElementById('saveProfileBtn').addEventListener('click', async function() {
     const email = document.getElementById('editEmail').value.trim();
-    const password = document.getElementById('editPassword').value.trim();
+    const currentPassword = document.getElementById('currentPassword').value;
+    const password = document.getElementById('editPassword').value;
     const description = document.getElementById('editDescription').value.trim();
 
     // Front-end validation
     if (!email) { alert('Email required'); return; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) { alert('Invalid email'); return; }
-    if (password && password.length < MIN_PASSWORD_LENGTH) { 
-        alert(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`); 
-        return; 
+    if (password) {
+        const strongPassword = password.length >= 8 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
+        if (!strongPassword) { alert('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'); return; }
+        if (!currentPassword) { alert('Current password is required to change password.'); return; }
     }
 
     try {
         const bodyData = { email, description };
-        if (password) bodyData.password = password;
+        if (password) {
+            bodyData.password = password;
+            bodyData.currentPassword = currentPassword;
+        }
         if (removeProfilePicture) bodyData.removeProfilePicture = true;
 
         const res = await fetch('/api/account-profile/update', { 

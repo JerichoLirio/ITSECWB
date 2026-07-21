@@ -4,6 +4,7 @@ let readableDate = null;
 let selectedTime = null;
 let selectedLab = null;
 let currentSeatId = null;
+let currentReservationId = null;
 
 /**
  * Not sure why but flatpickr should be the top function else the calendar won't show up
@@ -53,19 +54,21 @@ async function updateSeatAvailability() {
     // Reset all seats in the current display first
     document.querySelectorAll('.btn.seat').forEach(btn => {
       btn.classList.remove('occupied');
-      btn.removeAttribute('data-user'); 
+      btn.removeAttribute('data-user');
       btn.removeAttribute('data-user-id');
       btn.removeAttribute('data-walkin');
+      btn.removeAttribute('data-reservation-id');
     });
 
     // Mark the occupied seats nased on the data res
     if (data.success) {
-      data.occupiedSeats.forEach(({ seat, username, userId, isWalkIn }) => {
+      data.occupiedSeats.forEach(({ seat, username, userId, isWalkIn, reservationId }) => {
         const btn = document.getElementById(seat);
         if (btn) {
           btn.classList.add('occupied');
           btn.setAttribute('data-user', username); // Data user is just a hidden property in html, will be used to display the username in modals
           btn.setAttribute('data-user-id', userId); // Used to check if the user id of the one who reserved it, is the same as the user id of the CURRENT SESSION user in modals
+          btn.setAttribute('data-reservation-id', reservationId);
           if (isWalkIn) btn.setAttribute('data-walkin', 'true');
         }
       });
@@ -112,6 +115,7 @@ function setupLabSelector() {
 function handleSeatClick(btn) {
   const seatId = btn.id;
   currentSeatId = seatId;
+  currentReservationId = btn.getAttribute('data-reservation-id') || null;
   const isWalkIn = btn.getAttribute('data-walkin') === 'true';
 
   // Different modals are shown depending on whether seat is occupied or not (shows either reserve func. or other user)
@@ -125,7 +129,7 @@ function handleSeatClick(btn) {
   
   // For seats that are empty:
   if (!btn.classList.contains('occupied')) {
-    if (currentUserRole === 'technician') {
+    if ((currentUserRole === 'lab_manager' || currentUserRole === 'admin')) {
       new bootstrap.Modal(document.getElementById('walkInModal')).show();
     } else {
       new bootstrap.Modal(document.getElementById('emptySeatModal')).show();
@@ -149,13 +153,85 @@ function handleSeatClick(btn) {
       }
     });
  
-    if (currentUserRole === 'technician') {
+    if ((currentUserRole === 'lab_manager' || currentUserRole === 'admin')) {
+      prefillEditForm('Tech');
       new bootstrap.Modal(document.getElementById('editModal')).show();
     } else if (seatUserId === currentUserId) { // If the selected seat was made by the current user
+      prefillEditForm('User');
       new bootstrap.Modal(document.getElementById('editUserModal')).show();
     } else {  // Viewing the occupied seat of a different user
       new bootstrap.Modal(document.getElementById('occupiedSeatModal')).show();
     }
+  }
+}
+
+/**
+ * Pre-fills the Edit modal's lab/date/time fields with the reservation's current values
+ */
+function prefillEditForm(which) {
+  const labField = document.getElementById(`editLab${which}`);
+  const dateField = document.getElementById(`editDate${which}`);
+  const timeField = document.getElementById(`editTime${which}`);
+  if (labField) labField.value = selectedLab;
+  if (dateField) dateField.value = selectedDate;
+  if (timeField) timeField.value = selectedTime;
+}
+
+/**
+ * Restricts the Edit modal's date inputs to the same 7-day booking window as the calendar
+ */
+function setupEditDateLimits() {
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const maxIso = new Date().fp_incr(7).toISOString().slice(0, 10);
+  ['editDateUser', 'editDateTech'].forEach(id => {
+    const field = document.getElementById(id);
+    if (field) {
+      field.min = todayIso;
+      field.max = maxIso;
+    }
+  });
+}
+
+/**
+ * Move an existing reservation to a different lab, date, or time
+ */
+async function updateReservation(which) {
+  if (!currentReservationId) return;
+
+  const lab = document.getElementById(`editLab${which}`).value;
+  const date = document.getElementById(`editDate${which}`).value;
+  const time = document.getElementById(`editTime${which}`).value;
+  const [startTime, endTime] = time.split('-');
+
+  try {
+    const response = await fetch(`/api/reservations/${currentReservationId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lab,
+        seat: currentSeatId,
+        date,
+        startTime: startTime.trim(),
+        endTime: endTime.trim()
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal')) ||
+                    bootstrap.Modal.getInstance(document.getElementById('editModal'));
+      if (modal) modal.hide();
+      showMessage('Reservation updated successfully!', 'success');
+      currentSeatId = null;
+      currentReservationId = null;
+      updateSeatAvailability();
+    } else {
+      showMessage('Failed to update reservation: ' + data.message, 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage('An error occurred while updating the reservation', 'error');
   }
 }
 
@@ -227,6 +303,7 @@ async function removeReservation() {
       if (modal) modal.hide();
       showMessage('Reservation removed successfully!', 'success');
       currentSeatId = null;
+      currentReservationId = null;
       updateSeatAvailability();
     } else {
       showMessage('Failed to remove reservation: ' + data.message, 'error');
@@ -238,7 +315,7 @@ async function removeReservation() {
 }
 
 /**
- * Reserve a seat as a walk-in (technician only)
+ * Reserve a seat as a walk-in (lab_manager only)
  */
 async function reserveSeatWalkIn() {
   if (!currentSeatId) return;
@@ -293,10 +370,11 @@ function setupSeatListeners() {
 }
 
 // Setup everything
-document.addEventListener('DOMContentLoaded', function() { 
+document.addEventListener('DOMContentLoaded', function() {
   setupTimeSelector();
   setupLabSelector();
   setupSeatListeners();
+  setupEditDateLimits();
   updateSeatAvailability();
   setInterval(updateSeatAvailability, 5 * 60 * 1000); // Refresh every 5 minutes
 });

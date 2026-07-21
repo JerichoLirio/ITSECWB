@@ -1,15 +1,23 @@
 const mongoose = require('mongoose');
 
-// Schema
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['student', 'technician', 'admin'], required: true },
-  profilePicture: { type: String }, // File path, reconsider if we should implement customized profile pictures
-  description: { type: String },
-  rememberMeUntil: { type: Date },  // Specs said that this expires in three weeks until loggin in again                 
-  createdAt: { type: Date, default: Date.now } 
+  role: { type: String, enum: ['student', 'lab_manager', 'admin'], required: true, default: 'student' },
+  profilePicture: { type: String },
+  description: { type: String, maxlength: 300 },
+  rememberMeUntil: { type: Date },
+  failedLoginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date, default: null },
+  lastSuccessfulLoginAt: { type: Date, default: null },
+  lastFailedLoginAt: { type: Date, default: null },
+  lastLoginMessage: { type: String, default: '' },
+  passwordChangedAt: { type: Date, default: Date.now },
+  passwordHistory: [{ type: String }],
+  securityQuestion: { type: String, maxlength: 120 },
+  securityAnswerHash: { type: String },
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('User', userSchema);

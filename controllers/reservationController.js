@@ -1,109 +1,142 @@
 const Reservation = require('../models/Reservation');
+const { cleanString, isValidReservationInput, writeLog } = require('../utils/security');
 
-// Security check for nosql inject
-function sanitize(value) {
-  if (typeof value === 'object' && value !== null) {
-    for (let key in value) {
-      if (key.startsWith('$')) delete value[key];
-    }
-  }
-  return value;
-}
-
-// Create reservation
 exports.create = async (req, res) => {
-  const lab = sanitize(req.body.lab);
-  const seat = sanitize(req.body.seat);
-  const date = sanitize(req.body.date);
-  const startTime = sanitize(req.body.startTime);
-  const endTime = sanitize(req.body.endTime);
-  const anonymous = req.body.anonymous;
-  const walkInName = sanitize(req.body.walkInName);
+  const lab = cleanString(req.body.lab);
+  const seat = cleanString(req.body.seat);
+  const date = cleanString(req.body.date);
+  const startTime = cleanString(req.body.startTime);
+  const endTime = cleanString(req.body.endTime);
+  const anonymous = req.body.anonymous === true || req.body.anonymous === 'true';
+  const walkInName = cleanString(req.body.walkInName || '');
 
-  if (!lab || !seat || !date || !startTime || !endTime) {
-  return res.status(400).json({ success: false, message: 'All fields are required' });
+  if (!isValidReservationInput({ lab, seat, date, startTime, endTime })) {
+    await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-create' });
+    return res.status(400).json({ success: false, message: 'Invalid reservation details.' });
   }
 
-  // You need to be a technician to be able to create walk-in reservations
-  if (walkInName && req.session.role !== 'technician') {
-    return res.status(403).json({ success: false, message: 'Only technicians can create walk-in reservations' });
+  if (walkInName && (req.session.role !== 'lab_manager' && req.session.role !== 'admin')) {
+    await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'walk-in reservation' });
+    return res.status(403).json({ success: false, message: 'Only Lab Managers can create walk-in reservations.' });
+  }
+
+  if (walkInName && (walkInName.length < 2 || walkInName.length > 60)) {
+    await writeLog(req, 'VALIDATION', 'failure', { form: 'walk-in-name' });
+    return res.status(400).json({ success: false, message: 'Walk-in name must be 2-60 characters.' });
   }
 
   try {
-
-
     const reservation = await Reservation.create({
       userId: req.session.userId,
-      lab, seat, date, startTime, endTime,
-      anonymous: anonymous || false,
+      lab,
+      seat,
+      date,
+      startTime,
+      endTime,
+      anonymous,
       walkInName: walkInName || null
     });
+    await writeLog(req, 'RESERVATION_CREATE', 'success', { lab, seat, date, startTime, walkIn: !!walkInName });
     res.status(201).json({ success: true, reservation });
   } catch (err) {
-    if (err.code === 11000) {  //https://www.mongodb.com/docs/manual/reference/error-codes/ 11000 is the error status for duped keys
-      return res.status(409).json({ success: false, message: 'This seat is already reserve for that time' }); // 409 is duplicate error code
-    }
-    res.status(500).json({ success: false, message: 'Server error: ' + err.message });
+    if (err.code === 11000) return res.status(409).json({ success: false, message: 'This seat is already reserved for that time.' });
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Something went wrong. Please try again later.' });
   }
 };
 
-// Remove reservation
-exports.remove = async (req, res) => {
-  const lab = sanitize(req.body.lab);
-  const seat = sanitize(req.body.seat);
-  const date = sanitize(req.body.date);
-  const startTime = sanitize(req.body.startTime);
+exports.update = async (req, res) => {
+  const lab = cleanString(req.body.lab);
+  const seat = cleanString(req.body.seat);
+  const date = cleanString(req.body.date);
+  const startTime = cleanString(req.body.startTime);
+  const endTime = cleanString(req.body.endTime);
 
-  // Technicians can only remove within 10 minutes of the reservation start time
+  if (!isValidReservationInput({ lab, seat, date, startTime, endTime })) {
+    await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-update' });
+    return res.status(400).json({ success: false, message: 'Invalid reservation details.' });
+  }
+
   try {
-    const reservation = await Reservation.findOne({lab, seat, date, startTime});
-    if (!reservation) {
-      return res.status(404).json({ success: false, message: 'Reservation cannot be found' });
-    }
-    
-    // Checks if you are the user that reserved the reservation (Need to string them bc they return as objects)
-    if (req.session.role !== 'technician' && String(reservation.userId) !== String(req.session.userId)) {
-      return res.status(403).json({ success: false, message: 'You can only remove your own reservations' });
+    const reservation = await Reservation.findById(req.params.id);
+    if (!reservation) return res.status(404).json({ success: false, message: 'Reservation cannot be found.' });
+
+    const isOwner = String(reservation.userId) === String(req.session.userId);
+    const canManage = ['lab_manager', 'admin'].includes(req.session.role);
+    if (!isOwner && !canManage) {
+      await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'update reservation', reservationId: reservation._id });
+      return res.status(403).json({ success: false, message: 'You can only modify your own reservations.' });
     }
 
-    if (req.session.role === 'technician') {
-      const [hours, minutes] = reservation.startTime.split(':').map(Number);
-      const start = new Date();
-      start.setHours(hours, minutes, 0, 0);
-      if (Math.abs(start - new Date()) > 10 * 60 * 1000) {
-        return res.status(403).json({ success: false, message: 'Reservations can only be removed within 10 minutes of the start time' });
-      }
+    reservation.lab = lab;
+    reservation.seat = seat;
+    reservation.date = date;
+    reservation.startTime = startTime;
+    reservation.endTime = endTime;
+
+    await reservation.save();
+    await writeLog(req, 'RESERVATION_UPDATE', 'success', { reservationId: reservation._id, lab, seat, date, startTime });
+    res.json({ success: true, reservation });
+  } catch (err) {
+    if (err.code === 11000) return res.status(409).json({ success: false, message: 'This seat is already reserved for that time.' });
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Something went wrong. Please try again later.' });
+  }
+};
+
+exports.remove = async (req, res) => {
+  const lab = cleanString(req.body.lab);
+  const seat = cleanString(req.body.seat);
+  const date = cleanString(req.body.date);
+  const startTime = cleanString(req.body.startTime);
+
+  if (!lab || !seat || !date || !startTime) {
+    await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-delete' });
+    return res.status(400).json({ success: false, message: 'Invalid delete request.' });
+  }
+
+  try {
+    const reservation = await Reservation.findOne({ lab, seat, date, startTime });
+    if (!reservation) return res.status(404).json({ success: false, message: 'Reservation cannot be found.' });
+
+    const isOwner = String(reservation.userId) === String(req.session.userId);
+    const canManage = ['lab_manager', 'admin'].includes(req.session.role);
+    if (!isOwner && !canManage) {
+      await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'delete reservation', reservationId: reservation._id });
+      return res.status(403).json({ success: false, message: 'You can only remove your own reservations.' });
     }
 
     await reservation.deleteOne();
+    await writeLog(req, 'RESERVATION_DELETE', 'success', { lab, seat, date, startTime });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error: ' + err.message });
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Something went wrong. Please try again later.' });
   }
 };
 
-// Gets the lab, date, time, (and user) of a reservation
 exports.getByLabDateTime = async (req, res) => {
-  const lab = sanitize(req.query.lab);
-  const date = sanitize(req.query.date);
-  const startTime = sanitize(req.query.startTime);
+  const lab = cleanString(req.query.lab);
+  const date = cleanString(req.query.date);
+  const startTime = cleanString(req.query.startTime);
 
   if (!lab || !date || !startTime) {
-    return res.status(400).json({ success: false, message: 'Lab, date, and time are required' });
+    await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-search' });
+    return res.status(400).json({ success: false, message: 'Lab, date, and time are required.' });
   }
 
   try {
-    const reservations = await Reservation.find({ lab, date, startTime }).populate('userId', 'username');
-
-    // For each reservation in the database given the filter, return just the seat, and username
+    const reservations = await Reservation.find({ lab, date, startTime }).populate('userId', 'username').lean();
     const occupiedSeats = reservations.map(r => ({
       seat: r.seat,
-      username: r.walkInName || (r.anonymous ? 'Anonymous' : r.userId.username), // Prioritize walk in name, second anonymous, third actual username. Capitalize anonymous when displaying
+      username: r.walkInName || (r.anonymous ? 'Anonymous' : r.userId.username),
       userId: r.userId._id,
-      isWalkIn: !!r.walkInName  // Opted to just add a boolean field. Used for removing the link to reservations that are walk in
+      isWalkIn: !!r.walkInName,
+      reservationId: r._id
     }));
     res.json({ success: true, occupiedSeats });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error: ' + err.message });
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Something went wrong. Please try again later.' });
   }
 };

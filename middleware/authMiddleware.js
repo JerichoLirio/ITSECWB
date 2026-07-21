@@ -1,10 +1,39 @@
-// Use this as reference for the folder structure: https://dev.to/nadim_ch0wdhury/how-to-create-an-authentication-authorization-feature-in-express-js-restful-api-ge8
+const { writeLog } = require('../utils/security');
 
-/* Each page route already has their own session check so this is primarily for malicious users trying to call apis without authorization */
-exports.requireLogin = (req, res, next ) => {
+function wantsHtml(req) {
+  return req.accepts('html') && !req.originalUrl.startsWith('/api');
+}
+
+exports.requireLogin = async (req, res, next) => {
+  if (!req.session.userId) {
+    await writeLog(req, 'ACCESS_CONTROL', 'failure', { reason: 'Not logged in' });
+    if (wantsHtml(req)) return res.redirect('/login');
+    return res.status(401).json({ success: false, message: 'Please login first' });
+  }
+  next();
+};
+
+exports.requireRole = (...allowedRoles) => {
+  return async (req, res, next) => {
     if (!req.session.userId) {
+      await writeLog(req, 'ACCESS_CONTROL', 'failure', { reason: 'Not logged in' });
+      if (wantsHtml(req)) return res.redirect('/login');
       return res.status(401).json({ success: false, message: 'Please login first' });
     }
-    // Need a next() here otherwise the server just stalls for some reason
-    next(); 
-}
+
+    if (!allowedRoles.includes(req.session.role)) {
+      await writeLog(req, 'ACCESS_CONTROL', 'failure', {
+        reason: 'Insufficient role',
+        requiredRoles: allowedRoles,
+        currentRole: req.session.role
+      });
+      if (wantsHtml(req)) return res.status(403).render('error', {
+        title: 'Access Denied',
+        message: 'You do not have permission to access this page.',
+        css: ['/css/homepage.css']
+      });
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    next();
+  };
+};

@@ -72,9 +72,19 @@
                 <h5 class="modal-title">Profile</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body d-flex justify-content-center align-items-center gap-3">
+            <div class="modal-body text-center">
                 <img id="profile-modal-icon" class="modal-user-icon" src="/images/person-circle.svg">
-                <a href="/account-profile" target="_self" class="user-link" id="userLink">{{username}}</a>
+                <p class="mb-1"><a href="/account-profile" target="_self" class="user-link" id="userLink">{{username}}</a></p>
+                <p class="text-muted mb-2">{{roleLabel}}</p>
+                {{#if lastLoginNotice}}
+                  <div class="alert alert-info py-2 small">{{lastLoginNotice}}</div>
+                {{/if}}
+                {{#if (eq role 'admin')}}
+                  <a href="/admin" class="btn btn-outline-success btn-sm me-1">Admin Dashboard</a>
+                {{/if}}
+                {{#if (eq role 'lab_manager')}}
+                  <a href="/manager" class="btn btn-outline-success btn-sm">Lab Manager Dashboard</a>
+                {{/if}}
             </div>
             <div class="modal-footer d-flex justify-content-center">
                 <a onclick="logout()" class="btn modal-btn bg-danger text-white" id="logoutBtn">Logout</a>
