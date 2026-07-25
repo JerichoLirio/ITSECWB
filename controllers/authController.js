@@ -186,9 +186,9 @@ exports.createUserByAdmin = async (req, res) => {
   const password = req.body.password;
   const role = cleanString(req.body.role);
   const securityQuestion = cleanString(req.body.securityQuestion || 'What is your custom recovery phrase for this lab account?');
-  const securityAnswer = cleanString(req.body.securityAnswer || 'TemporaryAnswer123!');
+  const securityAnswer = cleanString(req.body.securityAnswer);
 
-  if (!isValidUsername(username) || !isValidEmail(email) || !isStrongPassword(password) || !['admin', 'lab_manager'].includes(role)) {
+  if (!isValidUsername(username) || !isValidEmail(email) || !isStrongPassword(password) || !['admin', 'lab_manager'].includes(role) || !securityAnswer || securityAnswer.length < 6) {
     await writeLog(req, 'VALIDATION', 'failure', { form: 'admin-create-user' });
     return res.status(400).json({ success: false, message: 'Please check the account details and password policy.' });
   }

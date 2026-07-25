@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Reservation = require('../models/Reservation');
+const { isValidUsername } = require('../utils/security');
 
 function roleLabel(role) {
   if (role === 'admin') return 'Administrator';
@@ -59,6 +60,9 @@ exports.getAccountProfile = async (req, res) => {
 
 exports.getProfile = async (req, res) => {
   const name = decodeURIComponent(req.params.name);
+  if (!isValidUsername(name)) {
+    return res.status(404).render('error', { title: 'Not Found', message: 'Profile not found.' });
+  }
   try {
     const user = await User.findOne({ username: name }).lean();
     if (!user) return res.status(404).render('error', { title: 'Not Found', message: 'Profile not found.' });

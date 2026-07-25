@@ -1,16 +1,16 @@
 
     body{
-        background-image: url('../../images/ls_hall.JPG') ; /*La Salle Hall JPG*/
-        background-size: cover; /*Image covers the entire page*/
-        background-position: center; /*Centers the Image*/
-        background-attachment: fixed; /* Image does not move during scrolling */
-        background-repeat: no-repeat; /* Image does not do that weird repeating pattern */
-        background-color: #087830; /* La Salle Green backup color */
+        background-image: url('../../images/ls_hall.JPG') ; 
+        background-size: cover; 
+        background-position: center; 
+        background-attachment: fixed; 
+        background-repeat: no-repeat;
+        background-color: #087830; 
 
         margin: 0; 
         padding: 0; 
 
-        min-height: 100vh; /* Sets size to 100% of device I think */
+        min-height: 100vh;
 
         display: flex; /* */
         justify-content: center;
@@ -19,12 +19,13 @@
     }
 
     .login-box{
-        background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
-        border-radius: 10px; /* Rounded corners */
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 12px; 
         padding: 40px;
-        width: 350px; /* Fixed width */
-        max-width: 90%; /* Responsive on small screens */
+        width: 400px; 
+        max-width: 90%; 
         position: relative;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
 
     .corner-logo {
@@ -39,7 +40,7 @@
     .logo-circle {
         width: 40px;
         height: 40px;
-        background-color: #087830; /* La Salle Green */
+        background-color: #087830;
         border-radius: 50%;
         display: flex;
         justify-content: center;
@@ -126,8 +127,6 @@
         font-size: 14px;
     }
 
-
-    /*Added later for Icon Support in Forms*/
     .svg-icon {
         width: 20px;
         height: 20px;
@@ -135,14 +134,11 @@
     }
 
     /*Remember me */
-
     .remember-me {
         display: flex;
         align-items: center;
-        margin-bottom: 25px;
         cursor: pointer;
         user-select: none;
-        margin: 0;
     }
 
     .remember-checkbox {
@@ -159,7 +155,6 @@
         cursor: pointer;
     }
 
-    /* Login*/
     .login-button {
         width: 100%;
         padding: 16px;
@@ -179,7 +174,7 @@
     .login-button:hover {
         background-color: #076428;
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(8, 120, 48, 0.3); /* This is so subtle lol*/
+        box-shadow: 0 5px 15px rgba(8, 120, 48, 0.3); 
     }
 
     .login-button:active {
@@ -199,26 +194,40 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 25px;
-    }
-
-    /* Register link */
-    .register-link {
-        display: flex;
-        align-items: center;
-    }
-
-
-    .register-link a {
-        color: #087830;
-        text-decoration: none; /* Disables underline */
-        font-weight: 600;
         font-size: 14px;
-        transition: all 0.3s ease;
-        white-space: nowrap;
     }
 
-    .register-link a:hover {
+    .form-options a {
+        color: #087830;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .form-options a:hover {
         color: #065c25;
     }
 
+    /* Separator line */
+    .separator {
+        border: none;
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 25px 0;
+    }
 
+    /* "Don't have an account?" section */
+    .register-section {
+        text-align: center;
+        font-size: 15px;
+    }
+
+    .register-section a {
+        color: #087830;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .register-section a:hover {
+        text-decoration: underline;
+    }

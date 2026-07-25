@@ -12,7 +12,7 @@ exports.dashboard = async (req, res) => {
     role: req.session.role,
     users,
     logs,
-    css: ['/css/homepage.css'],
+    css: ['/css/admin.css'],
     js: ['/js/admin.js']
   });
 };

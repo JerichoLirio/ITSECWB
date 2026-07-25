@@ -9,7 +9,7 @@ async function createPrivilegedUser() {
   const role = document.getElementById('new-role').value;
   const securityAnswer = document.getElementById('new-answer').value.trim();
   const securityQuestion = 'What is your assigned recovery phrase for this lab account?';
-  if (!username || !email || !strongPassword(password) || securityAnswer.length < 6) return showMessage('Please complete all fields and follow the password policy.', 'error');
+  if (!username || !email || !strongPassword(password) || !securityAnswer || securityAnswer.length < 6) return showMessage('Please complete all fields. Security answer must be at least 6 characters.', 'error');
   const res = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password, role, securityQuestion, securityAnswer }) });
   const data = await res.json();
   if (data.success) { showMessage('Account created.', 'success'); setTimeout(() => location.reload(), 800); }

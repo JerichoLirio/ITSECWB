@@ -1,5 +1,5 @@
 const Reservation = require('../models/Reservation');
-const { cleanString, isValidReservationInput, writeLog } = require('../utils/security');
+const { cleanString, isValidReservationInput, isValidDate, LABS, SEATS, TIMES, writeLog } = require('../utils/security');
 
 exports.create = async (req, res) => {
   const lab = cleanString(req.body.lab);
@@ -90,7 +90,7 @@ exports.remove = async (req, res) => {
   const date = cleanString(req.body.date);
   const startTime = cleanString(req.body.startTime);
 
-  if (!lab || !seat || !date || !startTime) {
+  if (!LABS.includes(lab) || !SEATS.includes(seat) || !isValidDate(date) || !TIMES.includes(startTime)) {
     await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-delete' });
     return res.status(400).json({ success: false, message: 'Invalid delete request.' });
   }
@@ -120,7 +120,7 @@ exports.getByLabDateTime = async (req, res) => {
   const date = cleanString(req.query.date);
   const startTime = cleanString(req.query.startTime);
 
-  if (!lab || !date || !startTime) {
+  if (!LABS.includes(lab) || !isValidDate(date) || !TIMES.includes(startTime)) {
     await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-search' });
     return res.status(400).json({ success: false, message: 'Lab, date, and time are required.' });
   }

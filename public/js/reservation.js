@@ -14,11 +14,12 @@ let currentReservationId = null;
  * defaultDate: "today" initializes the calendar with today's date selected
  */
 const defaultDate = new Date();
-if (defaultDate.getDay() === 0) defaultDate.setDate(defaultDate.getDate() + 1); // Just realized flatpickr disables the ENTIRE day, not the ability to select it
+const isTodaySunday = defaultDate.getDay() === 0;
+if (isTodaySunday) defaultDate.setDate(defaultDate.getDate() + 1);
   const fp = flatpickr("#calendar", {
     dateFormat: "m-d-Y",
     inline: true,
-    minDate: "today",
+    minDate: isTodaySunday ? new Date(new Date().setDate(new Date().getDate() + 1)) : "today",
     maxDate: new Date().fp_incr(7),
     defaultDate: defaultDate,
     disable: [
