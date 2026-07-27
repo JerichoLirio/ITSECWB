@@ -1,0 +1,84 @@
+{{> navbar}}
+{{> userModal}}
+<div class="container py-4">
+  <div class="card p-3 mb-4 shadow-sm">
+    <h2>Administrator Dashboard</h2>
+    <p class="text-muted mb-0">Admin-only area for account management and audit logs.</p>
+  </div>
+
+  <div class="card p-3 mb-4 shadow-sm">
+    <h4>Create Admin or Lab Manager Account</h4>
+    <div class="row g-2">
+      <div class="col-md-2"><input class="form-control" id="new-username" placeholder="Username"></div>
+      <div class="col-md-3"><input class="form-control" id="new-email" placeholder="Email"></div>
+      <div class="col-md-2"><input type="password" class="form-control" id="new-password" placeholder="Password"></div>
+      <div class="col-md-2">
+        <select class="form-select" id="new-role">
+          <option value="lab_manager">Lab Manager</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+      <div class="col-md-3"><input class="form-control" id="new-answer" placeholder="Recovery answer"></div>
+    </div>
+    <button class="btn btn-success mt-2 align-self-start" onclick="createPrivilegedUser()">Create Account</button>
+  </div>
+
+  <div class="card p-3 mb-4 shadow-sm">
+    <h4>Users</h4>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Locked Until</th><th>Action</th></tr></thead>
+        <tbody>
+          {{#each users}}
+          <tr>
+            <td>{{this.username}}</td>
+            <td>{{this.email}}</td>
+            <td>
+              {{#if (eq this.role 'student')}}
+                Student
+              {{else}}
+                <select class="form-select form-select-sm" id="role-{{this._id}}">
+                  <option value="lab_manager" {{#if (eq this.role 'lab_manager')}}selected{{/if}}>Lab Manager</option>
+                  <option value="admin" {{#if (eq this.role 'admin')}}selected{{/if}}>Administrator</option>
+                </select>
+              {{/if}}
+            </td>
+            <td>{{formatDate this.lockUntil}}</td>
+            <td>
+              {{#unless (eq this.role 'student')}}
+                <button class="btn btn-sm btn-primary" onclick="changeRole('{{this._id}}')">Save Role</button>
+                <button class="btn btn-sm btn-danger" onclick="deletePrivilegedUser('{{this._id}}')">Delete</button>
+              {{/unless}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card p-3 shadow-sm">
+    <h4>Recent Audit Logs</h4>
+    <div class="row g-2 mb-2">
+      <div class="col-md-3"><input class="form-control" id="filter-event" placeholder="Event type"></div>
+      <div class="col-md-3">
+        <select class="form-select" id="filter-status">
+          <option value="">All statuses</option>
+          <option value="success">Success</option>
+          <option value="failure">Failure</option>
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-secondary" onclick="filterLogs()">Filter</button></div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm" id="logs-table">
+        <thead><tr><th>Date</th><th>Event</th><th>Status</th><th>User</th><th>Role</th><th>Path</th></tr></thead>
+        <tbody>
+        {{#each logs}}
+          <tr><td>{{formatDate this.createdAt}}</td><td>{{this.eventType}}</td><td>{{this.status}}</td><td>{{this.username}}</td><td>{{this.role}}</td><td>{{this.path}}</td></tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

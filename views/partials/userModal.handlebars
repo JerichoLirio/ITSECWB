@@ -1,0 +1,28 @@
+<!-- User profile modal (top-right icon) -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="text-dark mb-2">{{viewerRoleLabel}}</p>
+        <img id="profile-modal-icon" class="modal-user-icon" src="/images/person-circle.svg">
+        <div class="d-flex flex-column align-items-center gap-2 mt-2 mb-2">
+          <a href="/account-profile" target="_self" class="btn btn-outline-success btn-sm" id="userLink">Profile</a>
+          {{#if (eq role 'admin')}}
+          <a href="/admin" class="btn btn-outline-success btn-sm">Admin Dashboard</a>
+          {{/if}}
+          {{#if (eq role 'lab_manager')}}
+          <a href="/manager" class="btn btn-outline-success btn-sm">Lab Manager Dashboard</a>
+          {{/if}}
+        </div>
+        <div class="alert alert-info py-2 small mb-0">{{#if lastLoginNotice}}{{lastLoginNotice}}{{else}}No previous login activity recorded.{{/if}}</div>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <a onclick="logout()" class="btn modal-btn bg-danger text-white" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,189 @@
+<!-- Container for the entire page -->
+<div class="d-flex flex-column vh-100">
+
+    {{> navbar}}
+
+    <!-- Main content -->
+    <div class="d-flex flex-grow-1 main-container">
+
+        <!-- Left side (Date time selection) -->
+        <div class="ps-4 me-3">
+            <div class="content-container d-flex flex-column h-100">
+
+                <!-- Lab dropdown -->
+                <div class="mb-2 shadow">
+                    <select class="form-select form-select-lg" id="labDropdown" name="lab">
+                        <optgroup label="Gokongwei">
+                            <option value="G404A">G404A</option>
+                            <option value="G404B">G404B</option>
+                        </optgroup>
+                        <optgroup label="Velasco Hall">
+                            <option value="V101">V101</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Flatpickr calendar -->
+                <div class="mb-3 d-flex justify-content-center shadow">
+                    <div id="calendar"></div>
+                </div>
+
+                <!-- Time interval dropdown -->
+                <div class="content-container bg-white shadow">
+                    <select class="form-select form-select-lg" id="timeInterval" name="time">
+                        <optgroup label="Morning">
+                            <option value="7:30-8:00">7:30-8:00</option>
+                            <option value="8:00-8:30">8:00-8:30</option>
+                            <option value="8:30-9:00">8:30-9:00</option>
+                            <option value="9:00-9:30">9:00-9:30</option>
+                            <option value="9:30-10:00">9:30-10:00</option>
+                            <option value="10:00-10:30">10:00-10:30</option>
+                            <option value="10:30-11:00">10:30-11:00</option>
+                            <option value="11:00-11:30">11:00-11:30</option>
+                            <option value="11:30-12:00">11:30-12:00</option>
+                        </optgroup>
+                        <optgroup label="Afternoon">
+                            <option value="1:00-1:30">1:00-1:30</option>
+                            <option value="1:30-2:00">1:30-2:00</option>
+                            <option value="2:00-2:30">2:00-2:30</option>
+                            <option value="2:30-3:00">2:30-3:00</option>
+                            <option value="3:00-3:30">3:00-3:30</option>
+                            <option value="3:30-4:00">3:30-4:00</option>
+                            <option value="4:00-4:30">4:00-4:30</option>
+                            <option value="4:30-5:00">4:30-5:00</option>
+                            <option value="5:00-5:30">5:00-5:30</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Admin and Lab Manager tools are available in their dashboards. -->
+                <button class="mt-auto btn btn-secondary align-self-start mt-3" onclick="history.back();">Back</button>
+
+            </div>
+        </div>
+
+        <!-- Right side (Seat Visualization) -->
+        <div class="flex-grow-1 pe-4 pb-3 mt-3">
+            <div class="content-container bg-white h-100 d-flex flex-column shadow">
+
+                <!-- Seat and Desk Grid -->
+                <div class="flex-grow-1 overflow-auto d-flex justify-content-center align-items-center">
+                    <div class="d-flex flex-column gap-4 p-3">
+
+                        <!-- Row 1 -->
+                        <div class="d-flex justify-content-center gap-5">
+                            <!-- Desk Group 1 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S1" class="btn seat">S1</button>
+                                    <button id="S2" class="btn seat">S2</button>
+                                    <button id="S3" class="btn seat">S3</button>
+                                    <button id="S4" class="btn seat">S4</button>
+                                </div>
+                            </div>
+
+                            <!-- Desk Group 2 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S5" class="btn seat">S5</button>
+                                    <button id="S6" class="btn seat">S6</button>
+                                    <button id="S7" class="btn seat">S7</button>
+                                    <button id="S8" class="btn seat">S8</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="d-flex justify-content-center gap-5">
+                            <!-- Desk Group 3 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S9" class="btn seat">S9</button>
+                                    <button id="S10" class="btn seat">S10</button>
+                                    <button id="S11" class="btn seat">S11</button>
+                                    <button id="S12" class="btn seat">S12</button>
+                                </div>
+                            </div>
+
+                            <!-- Desk Group 4 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S13" class="btn seat">S13</button>
+                                    <button id="S14" class="btn seat">S14</button>
+                                    <button id="S15" class="btn seat">S15</button>
+                                    <button id="S16" class="btn seat">S16</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div class="d-flex justify-content-center gap-5">
+                            <!-- Desk Group 5 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S17" class="btn seat">S17</button>
+                                    <button id="S18" class="btn seat">S18</button>
+                                    <button id="S19" class="btn seat">S19</button>
+                                    <button id="S20" class="btn seat">S20</button>
+                                </div>
+                            </div>
+
+                            <!-- Desk Group 6 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S21" class="btn seat">S21</button>
+                                    <button id="S22" class="btn seat">S22</button>
+                                    <button id="S23" class="btn seat">S23</button>
+                                    <button id="S24" class="btn seat">S24</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4 -->
+                        <div class="d-flex justify-content-center gap-5">
+                            <!-- Desk Group 7 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S25" class="btn seat">S25</button>
+                                    <button id="S26" class="btn seat">S26</button>
+                                    <button id="S27" class="btn seat">S27</button>
+                                    <button id="S28" class="btn seat">S28</button>
+                                </div>
+                            </div>
+
+                            <!-- Desk Group 8 -->
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="desk mb-2"></div>
+                                <div class="d-flex gap-4">
+                                    <button id="S29" class="btn seat">S29</button>
+                                    <button id="S30" class="btn seat">S30</button>
+                                    <button id="S31" class="btn seat">S31</button>
+                                    <button id="S32" class="btn seat">S32</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        {{> modals}}
+
+        <!-- External JS -->
+        <script>
+            // Need to expose this to reservations.js to have dynamic modals (based on current user)
+            const defaultLab = "{{labName}}";
+            const currentUsername = "{{username}}";
+            const currentUserRole = "{{role}}";
+            const currentUserId = "{{userId}}";
+        </script>
+    </div>
+</div>
