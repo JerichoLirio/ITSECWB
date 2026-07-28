@@ -86,9 +86,13 @@ exports.getProfile = async (req, res) => {
 
 exports.getReservation = async (req, res) => {
   const selectedLab = req.params.labName;
+
   const labs = await Lab.find().lean();
   const blockedMap = {};
-  labs.forEach(l => { blockedMap[l.name] = l.isBlocked; });
+  labs.forEach(l => {
+    blockedMap[l.name] = { isBlocked: l.isBlocked, reason: l.blockedReason || '' };
+  });
+
   res.render('reservation', {
     title: 'LRS - Reservation',
     labName: selectedLab,

@@ -17,10 +17,11 @@ exports.create = async (req, res) => {
   }
 
   const labDoc = await Lab.findOne({ name: lab }).lean();
-  if (labDoc && labDoc.isBlocked) {
-    await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'reserve blocked lab', lab });
-    return res.status(403).json({ success: false, message: 'This lab is currently unavailable for reservations.' });
-  }
+if (labDoc && labDoc.isBlocked) {
+  await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'reserve blocked lab', lab });
+  const reasonText = labDoc.blockedReason ? ` Reason: ${labDoc.blockedReason}` : '';
+  return res.status(403).json({ success: false, message: `This lab is currently unavailable for reservations.${reasonText}` });
+}
 
   if (walkInName && (req.session.role !== 'lab_manager' && req.session.role !== 'admin')) {
     await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'walk-in reservation' });
@@ -64,11 +65,13 @@ exports.update = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid reservation details.' });
   }
 
-  const labDoc = await Lab.findOne({ name: lab }).lean();
-  if (labDoc && labDoc.isBlocked) {
-    await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'move reservation into blocked lab', lab });
-    return res.status(403).json({ success: false, message: 'This lab is currently unavailable for reservations.' });
-  }
+  // in exports.update
+const labDoc = await Lab.findOne({ name: lab }).lean();
+if (labDoc && labDoc.isBlocked) {
+  await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'move reservation into blocked lab', lab });
+  const reasonText = labDoc.blockedReason ? ` Reason: ${labDoc.blockedReason}` : '';
+  return res.status(403).json({ success: false, message: `This lab is currently unavailable for reservations.${reasonText}` });
+}
 
   try {
     const reservation = await Reservation.findById(req.params.id);

@@ -80,8 +80,11 @@ async function updateSeatAvailability() {
 }
 
 function checkLabBlocked() {
-  if (typeof labStatuses !== 'undefined' && labStatuses[selectedLab]) {
-    showMessage(`${selectedLab} is currently unavailable for reservations.`, 'error');
+  const status = typeof labStatuses !== 'undefined' ? labStatuses[selectedLab] : null;
+
+  if (status && status.isBlocked) {
+    const reasonText = status.reason ? ` Reason: ${status.reason}` : '';
+    showMessage(`${selectedLab} is currently unavailable for reservations.${reasonText}`, 'error');
     document.querySelectorAll('.btn.seat').forEach(btn => btn.disabled = true);
   } else {
     document.querySelectorAll('.btn.seat').forEach(btn => btn.disabled = false);
