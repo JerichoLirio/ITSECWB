@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { isValidUsername, roleLabel } = require('../utils/security');
+const Lab = require('../models/Lab');
 
 exports.getHomepage = async (req, res) => {
   if (!req.session.userId) return res.redirect('/login');
@@ -83,11 +84,15 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.getReservation = (req, res) => {
+exports.getReservation = async (req, res) => {
   const selectedLab = req.params.labName;
+  const labs = await Lab.find().lean();
+  const blockedMap = {};
+  labs.forEach(l => { blockedMap[l.name] = l.isBlocked; });
   res.render('reservation', {
     title: 'LRS - Reservation',
     labName: selectedLab,
+    labStatuses: JSON.stringify(blockedMap),
     username: req.session.username,
     role: req.session.role,
     viewerRoleLabel: roleLabel(req.session.role),

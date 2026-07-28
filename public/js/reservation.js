@@ -79,6 +79,15 @@ async function updateSeatAvailability() {
   }
 }
 
+function checkLabBlocked() {
+  if (typeof labStatuses !== 'undefined' && labStatuses[selectedLab]) {
+    showMessage(`${selectedLab} is currently unavailable for reservations.`, 'error');
+    document.querySelectorAll('.btn.seat').forEach(btn => btn.disabled = true);
+  } else {
+    document.querySelectorAll('.btn.seat').forEach(btn => btn.disabled = false);
+  }
+}
+
 /**
  * Updates selected time when user picks a different time interval
  */

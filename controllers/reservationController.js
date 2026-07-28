@@ -1,4 +1,5 @@
 const Reservation = require('../models/Reservation');
+const Lab = require('../models/Lab');
 const { cleanString, isValidReservationInput, isValidDate, LABS, SEATS, TIMES, writeLog } = require('../utils/security');
 
 exports.create = async (req, res) => {
@@ -13,6 +14,12 @@ exports.create = async (req, res) => {
   if (!isValidReservationInput({ lab, seat, date, startTime, endTime })) {
     await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-create' });
     return res.status(400).json({ success: false, message: 'Invalid reservation details.' });
+  }
+
+  const labDoc = await Lab.findOne({ name: lab }).lean();
+  if (labDoc && labDoc.isBlocked) {
+    await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'reserve blocked lab', lab });
+    return res.status(403).json({ success: false, message: 'This lab is currently unavailable for reservations.' });
   }
 
   if (walkInName && (req.session.role !== 'lab_manager' && req.session.role !== 'admin')) {
@@ -55,6 +62,12 @@ exports.update = async (req, res) => {
   if (!isValidReservationInput({ lab, seat, date, startTime, endTime })) {
     await writeLog(req, 'VALIDATION', 'failure', { form: 'reservation-update' });
     return res.status(400).json({ success: false, message: 'Invalid reservation details.' });
+  }
+
+  const labDoc = await Lab.findOne({ name: lab }).lean();
+  if (labDoc && labDoc.isBlocked) {
+    await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'move reservation into blocked lab', lab });
+    return res.status(403).json({ success: false, message: 'This lab is currently unavailable for reservations.' });
   }
 
   try {

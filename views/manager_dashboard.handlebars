@@ -5,6 +5,38 @@
     <h2>Lab Manager Dashboard</h2>
     <p class="text-muted mb-0">Lab Managers can view and manage lab reservations, including walk-in reservations.</p>
   </div>
+
+  <div class="card p-3 mb-4 shadow-sm">
+    <h4>Lab Availability</h4>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th>Lab</th><th>Status</th><th>Reason</th><th>Action</th></tr></thead>
+        <tbody>
+          {{#each labs}}
+          <tr>
+            <td>{{this.name}}</td>
+            <td>
+              {{#if this.isBlocked}}
+                <span class="badge bg-danger">Blocked</span>
+              {{else}}
+                <span class="badge bg-success">Available</span>
+              {{/if}}
+            </td>
+            <td>{{this.blockedReason}}</td>
+            <td>
+              {{#if this.isBlocked}}
+                <button class="btn btn-sm btn-success" onclick="unblockLab('{{this.name}}')">Unblock</button>
+              {{else}}
+                <button class="btn btn-sm btn-danger" onclick="showBlockPrompt('{{this.name}}')">Block</button>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="card p-3 shadow-sm">
     <h4>All Reservations</h4>
     <div class="table-responsive">

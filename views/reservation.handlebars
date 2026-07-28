@@ -180,6 +180,7 @@
         <!-- External JS -->
         <script>
             // Need to expose this to reservations.js to have dynamic modals (based on current user)
+            const labStatuses = JSON.parse('{{{labStatuses}}}');
             const defaultLab = "{{labName}}";
             const currentUsername = "{{username}}";
             const currentUserRole = "{{role}}";
