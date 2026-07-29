@@ -10,7 +10,7 @@ router.get('/user', authMiddleware.requireLogin, authController.getUser);
 router.post('/forgot-password/question', authController.getResetQuestion);
 router.post('/forgot-password/reset', authController.resetPassword);
 router.post('/admin/users', authMiddleware.requireRole('admin'), authController.createUserByAdmin);
-router.post('/admin/users/role', authMiddleware.requireRole('admin'), authController.changeRole);
+router.put('/admin/users', authMiddleware.requireRole('admin'), authController.editUserByAdmin);
 router.delete('/admin/users', authMiddleware.requireRole('admin'), authController.deletePrivilegedUser);
 
 module.exports = router;
