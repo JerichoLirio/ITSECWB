@@ -1,9 +1,11 @@
+// 2.2.1 single site-wide access control component
 const { writeLog } = require('../utils/security');
 
 function wantsHtml(req) {
   return req.accepts('html') && !req.originalUrl.startsWith('/api');
 }
 
+// 2.1.2 deny by default if not logged in
 exports.requireLogin = async (req, res, next) => {
   if (!req.session.userId) {
     await writeLog(req, 'ACCESS_CONTROL', 'failure', { reason: 'Not logged in' });
@@ -13,6 +15,7 @@ exports.requireLogin = async (req, res, next) => {
   next();
 };
 
+// 2.2.2 fails securely, 2.4.7 logs access control failures
 exports.requireRole = (...allowedRoles) => {
   return async (req, res, next) => {
     if (!req.session.userId) {
