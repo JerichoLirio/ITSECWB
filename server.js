@@ -50,6 +50,7 @@ app.use('/api', authRoutes);
 app.use('/api', reservationRoutes);
 app.use('/api', apiRoutes);
 
+// 2.4.2 custom error page for 404s
 app.use(async (req, res) => {
   await writeLog(req, 'ROUTE_NOT_FOUND', 'failure', { path: req.originalUrl });
   if (req.accepts('html')) {
@@ -58,6 +59,7 @@ app.use(async (req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
 
+// 2.4.1 no stack trace shown to user, only logged server side
 app.use(async (err, req, res, next) => {
   console.error(err);
   await writeLog(req, 'SERVER_ERROR', 'failure', { path: req.originalUrl });
