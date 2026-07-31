@@ -164,9 +164,6 @@ exports.getByLabDateTime = async (req, res) => {
     res.status(500).json({ success: false, message: 'Something went wrong. Please try again later.' });
   }
 };
-const Reservation = require('../models/Reservation');
-const Lab = require('../models/Lab');
-const { cleanString, isValidReservationInput, isValidDate, LABS, SEATS, TIMES, writeLog } = require('../utils/security');
 
 exports.create = async (req, res) => {
   const lab = cleanString(req.body.lab);
