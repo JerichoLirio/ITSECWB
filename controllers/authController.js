@@ -268,9 +268,17 @@ exports.deletePrivilegedUser = async (req, res) => {
 
 exports.getResetQuestion = async (req, res) => {
   const username = cleanString(req.body.username);
-  if (!isValidUsername(username)) return res.status(400).json({ success: false, message: 'Invalid request' });
+  if (!isValidUsername(username)) {
+    await writeLog(req, 'PASSWORD_RESET_REQUEST', 'failure', { username: username || 'invalid', reason: 'Invalid username format' });
+    return res.status(400).json({ success: false, message: 'Invalid request' });
+  }
+  await writeLog(req, 'PASSWORD_RESET_REQUEST', 'initiated', { username });
   const user = await User.findOne({ username }).lean();
-  if (!user) return res.status(400).json({ success: false, message: 'Invalid request' });
+  if (!user) {
+    await writeLog(req, 'PASSWORD_RESET_REQUEST', 'failure', { username, reason: 'Account not found' });
+    return res.status(400).json({ success: false, message: 'Invalid request' });
+  }
+  await writeLog(req, 'PASSWORD_RESET_REQUEST', 'success', { username });
   res.json({ success: true, question: user.securityQuestion || 'No question set.' });
 };
 
