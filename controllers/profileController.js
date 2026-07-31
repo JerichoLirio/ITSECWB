@@ -67,8 +67,8 @@ exports.updateProfile = async (req, res) => {
         await writeLog(req, 'VALIDATION', 'failure', { form: 'password-change', reason: 'Weak password' });
         return res.status(400).json({ success: false, message: PASSWORD_POLICY_TEXT });
       }
-      // 2.1.11 password must be at least a day old before changing again
-      if (Date.now() - new Date(user.passwordChangedAt).getTime() < ONE_DAY_MS) {
+      // 2.1.11 only applies once they've changed it before, so first change isn't blocked
+      if (user.passwordChangedAt && Date.now() - new Date(user.passwordChangedAt).getTime() < ONE_DAY_MS) {
         await writeLog(req, 'PASSWORD_CHANGE', 'failure', { reason: 'Password too new' });
         return res.status(400).json({ success: false, message: 'Password must be at least one day old before it can be changed again.' });
       }
