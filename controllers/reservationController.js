@@ -16,6 +16,7 @@ exports.create = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid reservation details.' });
   }
 
+  // 2.2.3 can't reserve a lab that's been blocked
   const labDoc = await Lab.findOne({ name: lab }).lean();
 if (labDoc && labDoc.isBlocked) {
   await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'reserve blocked lab', lab });
@@ -77,6 +78,7 @@ if (labDoc && labDoc.isBlocked) {
     const reservation = await Reservation.findById(req.params.id);
     if (!reservation) return res.status(404).json({ success: false, message: 'Reservation cannot be found.' });
 
+    // 2.2.3 only owner or lab manager/admin can modify a reservation
     const isOwner = String(reservation.userId) === String(req.session.userId);
     const canManage = ['lab_manager', 'admin'].includes(req.session.role);
     if (!isOwner && !canManage) {
