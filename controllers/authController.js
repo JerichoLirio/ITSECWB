@@ -10,11 +10,14 @@ const {
   writeLog
 } = require('../utils/security');
 
+// 2.1.3 bcrypt one-way salted hash, see hash calls below
 const SALT_ROUNDS = 10;
+// 2.1.8 lockout settings
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCK_TIME_MINUTES = 10;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+// 2.1.10 checks new password against history
 async function isPasswordReused(user, plainPassword) {
   const hashes = [user.password, ...(user.passwordHistory || [])];
   for (const hash of hashes) {
@@ -27,8 +30,10 @@ exports.login = async (req, res) => {
   const username = cleanString(req.body.username);
   const password = req.body.password;
   const remember = req.body.remember;
+  // 2.1.4 same message either way, don't say which field was wrong
   const genericMessage = 'Invalid username and/or password';
 
+  // 2.4.6 log login attempts, success and failure
   if (!username || !password || !isValidUsername(username)) {
     await writeLog(req, 'LOGIN', 'failure', { username: username || 'blank', reason: 'Invalid login format' });
     return res.status(401).json({ success: false, message: genericMessage });
@@ -46,6 +51,7 @@ exports.login = async (req, res) => {
       return res.status(423).json({ success: false, message: 'Account is temporarily locked. Please try again later.' });
     }
 
+    // 2.1.12 show last login attempt on next successful login
     const previousUse = user.lastLoginMessage || 'No previous login activity recorded.';
     const passwordMatch = await bcrypt.compare(password, user.password);
 
@@ -109,6 +115,7 @@ exports.register = async (req, res) => {
   const securityQuestion = cleanString(req.body.securityQuestion);
   const securityAnswer = cleanString(req.body.securityAnswer);
 
+  // 2.4.5 log input validation failures
   if (!username || !email || !password || !confirmPassword || !securityQuestion || !securityAnswer) {
     await writeLog(req, 'VALIDATION', 'failure', { form: 'register', reason: 'Missing fields' });
     return res.status(400).json({ success: false, message: 'All fields are required' });
