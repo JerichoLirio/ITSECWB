@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   lastSuccessfulLoginAt: { type: Date, default: null },
   lastFailedLoginAt: { type: Date, default: null },
   lastLoginMessage: { type: String, default: '' },
-  passwordChangedAt: { type: Date, default: Date.now },
+  passwordChangedAt: { type: Date, default: null },
   passwordHistory: [{ type: String }],
   securityQuestion: { type: String, maxlength: 120 },
   securityAnswerHash: { type: String },
