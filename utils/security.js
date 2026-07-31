@@ -10,6 +10,7 @@ const TIMES = [
   '1:00','1:30','2:00','2:30','3:00','3:30','4:00','4:30','5:00','5:30'
 ];
 
+// 2.3.1 reject bad input instead of sanitizing it
 function isPlainString(value) {
   return typeof value === 'string' && !value.includes('$') && !value.includes('{') && !value.includes('}');
 }
@@ -19,6 +20,7 @@ function cleanString(value) {
   return value.trim();
 }
 
+// 2.3.3 username length range
 function isValidUsername(username) {
   return /^[A-Za-z0-9_]{3,30}$/.test(username || '');
 }
@@ -33,6 +35,7 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '') && email.length <= 100;
 }
 
+// 2.1.5 2.1.6 password complexity and length policy
 function isStrongPassword(password) {
   return typeof password === 'string' &&
     password.length >= 8 && password.length <= 72 &&
@@ -51,6 +54,7 @@ function isValidDate(dateText) {
   return date >= today && date <= maxDate && date.getDay() !== 0;
 }
 
+// 2.3.2 validate lab/seat/time against allowed range
 function isValidReservationInput({ lab, seat, date, startTime, endTime }) {
   return LABS.includes(lab) && SEATS.includes(seat) && isValidDate(date) &&
     TIMES.includes(startTime) && TIMES.includes(endTime) && TIMES.indexOf(endTime) === TIMES.indexOf(startTime) + 1;
