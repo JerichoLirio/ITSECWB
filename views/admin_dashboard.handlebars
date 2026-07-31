@@ -37,16 +37,18 @@
             <td>{{roleName this.role}}</td>
             <td>{{formatDate this.lockUntil}}</td>
             <td>
-              <button
-                class="btn btn-sm btn-primary"
-                onclick="openEditUser(this)"
-                data-id="{{this._id}}"
-                data-username="{{this.username}}"
-                data-email="{{this.email}}"
-                data-role="{{this.role}}"
-              >Edit</button>
-              {{#unless (eq this.username ../username)}}
-                <button class="btn btn-sm btn-danger" onclick="deletePrivilegedUser('{{this._id}}')">Delete</button>
+              {{#unless (eq this.role 'student')}}
+                <button
+                  class="btn btn-sm btn-primary"
+                  onclick="openEditUser(this)"
+                  data-id="{{this._id}}"
+                  data-username="{{this.username}}"
+                  data-email="{{this.email}}"
+                  data-role="{{this.role}}"
+                >Edit</button>
+                {{#unless (eq this.username ../username)}}
+                  <button class="btn btn-sm btn-danger" onclick="deletePrivilegedUser('{{this._id}}')">Delete</button>
+                {{/unless}}
               {{/unless}}
             </td>
           </tr>
@@ -109,7 +111,6 @@
           <select class="form-select" id="edit-role">
             <option value="admin">Administrator</option>
             <option value="lab_manager">Lab Manager</option>
-            <option value="student">Student</option>
           </select>
         </div>
       </div>
