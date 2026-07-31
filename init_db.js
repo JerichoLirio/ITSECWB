@@ -16,6 +16,7 @@ function getNextValidReservationDate() {
 }
 
 const testUsers = [
+  // 1.1.1 admin account
   {
     username: 'admin',
     email: 'admin@dlsu.edu.ph',
@@ -25,6 +26,7 @@ const testUsers = [
     securityQuestion: 'What is the admin demo recovery phrase?',
     securityAnswer: 'GreenArcherAdmin'
   },
+  // 1.1.2 lab manager account
   {
     username: 'labmanager',
     email: 'labmanager@dlsu.edu.ph',
@@ -34,6 +36,7 @@ const testUsers = [
     securityQuestion: 'What is the lab manager demo recovery phrase?',
     securityAnswer: 'GoksLabManager'
   },
+  // 1.1.3 student account
   {
     username: 'student',
     email: 'student@dlsu.edu.ph',
