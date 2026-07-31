@@ -4,6 +4,7 @@ const pageController = require('../controllers/pageController');
 const adminController = require('../controllers/adminController');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// 2.1.1 pages require login except the login, register, and forgot-password page
 router.get('/', authMiddleware.requireLogin, pageController.getHomepage);
 router.get('/home', authMiddleware.requireLogin, pageController.getHomepage);
 router.get('/login', pageController.getLogin);
