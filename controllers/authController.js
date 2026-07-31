@@ -214,7 +214,7 @@ exports.editUserByAdmin = async (req, res) => {
   const password = req.body.password || '';
   const role = cleanString(req.body.role);
 
-  if (!userId || !isValidUsername(username) || !isValidEmail(email) || !['admin', 'lab_manager', 'student'].includes(role) || (password && !isStrongPassword(password))) {
+  if (!userId || !isValidUsername(username) || !isValidEmail(email) || !['admin', 'lab_manager'].includes(role) || (password && !isStrongPassword(password))) {
     await writeLog(req, 'VALIDATION', 'failure', { form: 'admin-edit-user' });
     return res.status(400).json({ success: false, message: 'Please check the account details and password policy.' });
   }
@@ -222,6 +222,10 @@ exports.editUserByAdmin = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (user.role === 'student') {
+      await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'edit student account', targetUser: user.username });
+      return res.status(403).json({ success: false, message: 'Student accounts cannot be edited by an administrator.' });
+    }
     if (String(user._id) === String(req.session.userId) && role !== user.role) {
       return res.status(400).json({ success: false, message: 'You cannot change your own role.' });
     }
@@ -257,6 +261,10 @@ exports.deletePrivilegedUser = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (user.role === 'student') {
+      await writeLog(req, 'ACCESS_CONTROL', 'failure', { action: 'delete student account', targetUser: user.username });
+      return res.status(403).json({ success: false, message: 'Student accounts cannot be deleted by an administrator.' });
+    }
     await user.deleteOne();
     await writeLog(req, 'ADMIN_USER_DELETE', 'success', { deletedUsername: user.username, role: user.role });
     res.json({ success: true, message: 'Account deleted' });
